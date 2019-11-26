@@ -8,6 +8,8 @@ import time
 from . import mysendmail
 from . import autoconfig
 from . import autotelnet
+from . import autobianyi
+
 APP_TITLE=u'状态监控'
 APP_ICON ='res/app.bmp'
 
@@ -77,6 +79,8 @@ class mainFrame(wx.Frame):
 			autoconfig.config(args[1],args[2]);
 		elif args[0] == "切换":
 			autotelnet.auto_telnet_change_ip();
+		elif args[0] == "编译":
+			autobianyi.auto_bianyi("D:/test");
 		
 	
 	def on_size(self, evt):
