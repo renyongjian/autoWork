@@ -15,14 +15,21 @@ def config(url,phonenumber):
 		json_data = json.loads(data)
 		post_data = {};
 		showObj.show_str("正在查找号码...\n");
-		for obj in json_data['PhoneNumbers']:
-			if obj['DBID_SIP_PHONE_NUM'] == phonenumber:
-				post_data=obj;
-				showObj.show_str("非常好，号码已经找到...\n");
-				break;
-			else :
-				showObj.show_str("号码还没找到...\n");
-		
+		print_num="号码是:%s\n" %phonenumber;
+		showObj.show_str(print_num)
+		#for obj in json_data['PhoneNumbers']:
+			#if obj['DBID_SIP_PHONE_NUM'] == phonenumber:
+				#post_data=obj;
+				#showObj.show_str("非常好，号码已经找到...\n");
+				#break;
+			#else :
+				#showObj.show_str("号码还没找到...\n");
+		post_data=json_data[phonenumber];
+		if post_data:
+			showObj.show_str("非常好。。。。。。号码被正常找到\n");
+		else:
+			showObj.show_str("号码查找失败！！！！\n");
+			return False;
 		login_data = json_data['LoginData'];
 		login_headers = {"User-Agent":"renyongjain"};
 		login_url = "http://" + url + "/goform/websLogin";
