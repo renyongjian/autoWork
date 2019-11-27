@@ -29,9 +29,9 @@ class svnClient:
 				print("svn update 执行失败");
 				return False;
 	def svn_commit(self,ver_num,path):
-		commit_line='svn commit -m "修改版本号到%s"' %ver_num;
+		commit_line='svn commit -m "修改版本号到%s" %s' %(ver_num,path);
 		print(commit_line)
-		args = 'cd /d ' + self.svn_path + ' & ' + commit_line + path;
+		args = 'cd /d ' + self.svn_path + ' & ' + commit_line;
 		with subprocess.Popen(args, shell=True, universal_newlines = True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
 			output = proc.communicate();
 			print('执行svn commit命令输出：%s' % str(output));
