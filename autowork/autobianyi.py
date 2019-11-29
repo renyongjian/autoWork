@@ -8,7 +8,6 @@ import json
 
 
 from . import UIManager
-from . import interactive
 
 class svnClient:
 	def __init__(self):
