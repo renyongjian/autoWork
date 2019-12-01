@@ -68,9 +68,63 @@ class sshClient:
 		#print(stderr.read());
 		
 
-def auto_bianyi(path):
+def auto_bianyi(product,versions):
 	data="";
-	with open("F:/doc/ssh_login.conf") as file:
+	sw_version_name="SW_VERSION=";
+	sw_version="6.2";
+	new_versions= versions.split(',');
+	
+	#login to svn .
+	'''svn_client=svnClient();
+	svn_client.set_svn_path(path);
+	os.chdir(path);
+	svn_client.svn_update();'''
+	
+	#change config file 
+	#get config files 
+	for sw_version in new_versions:
+		print(sw_version);
+		with open("D:/doc/bianyi.conf",'r') as byconfig:
+			byconfig_data=byconfig.read();
+		json_data=json.loads(byconfig_data);
+		if(json_data):
+			for tmp_file in json_data[product]['files']:#找到所有要修改的配置文件。
+				#change config file
+				i=0;
+				found = False;
+				with open(tmp_file,'r') as fp:
+					fp_data = fp.readlines();
+					for line in fp_data:
+						if(sw_version_name in line):
+							line=line.replace('\n','');
+							if(line[-3:] != sw_version):
+								line=line.replace(' ','');
+								fp_data[i]=line[:-3]+sw_version + '\n';
+							else:
+								fp_data[i]=line[:-3]+sw_version +' ' + '\n';
+							print("line is %s,i=%d" %(fp_data,i));
+							found =True;
+							break;
+						i+=1;
+					print(found);
+					if(found):
+						with open(tmp_file,'w') as fp_write:
+							fp_write.writelines(fp_data);
+		else:
+			break;
+	#update
+	#svn_client.svn_commit("1.2","test.txt");
+	
+	#get svn version
+	
+	#svn_version = %s 
+	#clear fw dir 
+	
+
+	
+	
+	#login to sever and bianyi
+	'''with open("F:/doc/ssh_login.conf") as file:
 		data=file.read();
 	json_data=json.loads(data);
 	host=json_data['host'];
@@ -101,10 +155,7 @@ def auto_bianyi(path):
 	ssh.sendCmd(input_pass);
 	#wait
 	time.sleep(20);
-	ssh.close();
+	ssh.close();'''
 	
-	#svn_client=svnClient();
-	#svn_client.set_svn_path(path);
-	#os.chdir(path);
-	#svn_client.svn_update();
-	#svn_client.svn_commit("1.2","test.txt");
+	#get fws by version,send images
+	
