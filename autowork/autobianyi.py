@@ -32,6 +32,26 @@ class svnClient:
 			else:
 				print("svn update 执行失败");
 				return False;
+	def svn_get_version(self):
+		args = 'cd /d ' + self.svn_path + ' & svn info';
+		with subprocess.Popen(args, shell=True, universal_newlines = True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+			output = proc.communicate();
+			#print('执行svn update命令输出：%s' % str(output));
+			if not output[1]:
+				print("svn get version 执行成功");
+				out_str=str(output);
+				print(out_str);
+				list=out_str.split('\\n');
+				print(list)
+				for line in list:
+					if "Revision:" in line :
+						version_list= line.split(':');
+						print(version_list[1]);
+						return version_list[1].replace(' ','');
+			else:
+				print("svn get version 执行失败");
+				return False;
+				
 	def svn_commit(self,ver_num,path):
 		commit_line='svn commit -m "修改版本号到%s" %s' %(ver_num,path);
 		print(commit_line)
@@ -70,23 +90,25 @@ class sshClient:
 
 def auto_bianyi(product,versions):
 	data="";
-	sw_version_name="SW_VERSION=";
-	sw_version="6.2";
+	path="";
+	sw_version_name="sw_version=";
 	new_versions= versions.split(',');
 	
 	#login to svn .
-	'''svn_client=svnClient();
-	svn_client.set_svn_path(path);
-	os.chdir(path);
-	svn_client.svn_update();'''
+	svn_client=svnClient();
+
 	
 	#change config file 
 	#get config files 
 	for sw_version in new_versions:
 		print(sw_version);
-		with open("D:/doc/bianyi.conf",'r') as byconfig:
+		with open("F:/doc/bianyi.conf",'r') as byconfig:
 			byconfig_data=byconfig.read();
 		json_data=json.loads(byconfig_data);
+		path=json_data[product]['svn_dir'];
+		svn_client.set_svn_path(path);
+		os.chdir(path);
+		svn_client.svn_update();
 		if(json_data):
 			for tmp_file in json_data[product]['files']:#找到所有要修改的配置文件。
 				#change config file
@@ -109,15 +131,17 @@ def auto_bianyi(product,versions):
 					print(found);
 					if(found):
 						with open(tmp_file,'w') as fp_write:
-							fp_write.writelines(fp_data);
+							fp_write.writelines(fp_data);							
 		else:
 			break;
+
 	#update
-	#svn_client.svn_commit("1.2","test.txt");
-	
+	svn_client.svn_commit(sw_version,path);
 	#get svn version
+	svn_client.svn_update();
+	svn_version = svn_client.svn_get_version();
+	print(svn_version);
 	
-	#svn_version = %s 
 	#clear fw dir 
 	
 
