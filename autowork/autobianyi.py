@@ -87,7 +87,17 @@ class sshClient:
 		self.trans.close()
 		#print(stderr.read());
 		
-
+def delete_dire(dire):
+	dir_list = []
+	for root, dirs, files in os.walk(dire):
+		for afile in files:
+			os.remove(os.path.join(root, afile))
+		for adir in dirs:
+			dir_list.append(os.path.join(root, adir))
+	for bdir in dir_list:
+		os.rmdir(bdir)
+		
+		
 def auto_bianyi(product,versions):
 	data="";
 	path="";
@@ -131,55 +141,60 @@ def auto_bianyi(product,versions):
 					print(found);
 					if(found):
 						with open(tmp_file,'w') as fp_write:
-							fp_write.writelines(fp_data);							
+							fp_write.writelines(fp_data);
 		else:
 			break;
 
-	#update
-	svn_client.svn_commit(sw_version,path);
-	#get svn version
-	svn_client.svn_update();
-	svn_version = svn_client.svn_get_version();
-	print(svn_version);
-	
-	#clear fw dir 
-	
-
-	
-	
-	#login to sever and bianyi
-	'''with open("F:/doc/ssh_login.conf") as file:
-		data=file.read();
-	json_data=json.loads(data);
-	host=json_data['host'];
-	password=json_data['pass'];
-	user=json_data['user'];
-	port=json_data['port'];
-	cmd1=json_data['cmd1'];
-	cmd2=json_data['cmd2'];
-	
-	ssh = sshClient(host=host,port=(int)(port),user=user,password=password);
-	time.sleep(0.5);
-	res = ssh.recv(1024);
-	sys.stdout.write(res.decode())
-	sys.stdout.flush()
-	time.sleep(0.5);
-	ssh.sendCmd(cmd1);
-	time.sleep(0.5);
-	res=ssh.recv(1024);
-	sys.stdout.write(res.decode())
-	sys.stdout.flush()
-	time.sleep(0.5);
-	ssh.sendCmd(cmd2);
-	time.sleep(0.5);
-	res=ssh.recv(1024);
-	time.sleep(0.5);
-	#maybe need input password
-	input_pass="%s\n" %password
-	ssh.sendCmd(input_pass);
-	#wait
-	time.sleep(20);
-	ssh.close();'''
-	
-	#get fws by version,send images
-	
+		#update
+		svn_client.svn_commit(sw_version,path);
+		#get svn version
+		svn_client.svn_update();
+		svn_version = svn_client.svn_get_version();
+		print(svn_version);
+		
+		#clear fw dir 
+		fw_dir=json_data[product]['fw_dir']+sw_version;
+		delete_dire(fw_dir);
+		try:
+			os.makedirs(fw_dir);
+		except:
+			print("目录已经存在");
+		print(fw_dir);
+		
+		
+		#login to sever and bianyi
+		'''with open("F:/doc/ssh_login.conf") as file:
+			data=file.read();
+		json_data=json.loads(data);
+		host=json_data['host'];
+		password=json_data['pass'];
+		user=json_data['user'];
+		port=json_data['port'];
+		cmd1=json_data['cmd1'];
+		cmd2=json_data['cmd2'];
+		
+		ssh = sshClient(host=host,port=(int)(port),user=user,password=password);
+		time.sleep(0.5);
+		res = ssh.recv(1024);
+		sys.stdout.write(res.decode())
+		sys.stdout.flush()
+		time.sleep(0.5);
+		ssh.sendCmd(cmd1);
+		time.sleep(0.5);
+		res=ssh.recv(1024);
+		sys.stdout.write(res.decode())
+		sys.stdout.flush()
+		time.sleep(0.5);
+		ssh.sendCmd(cmd2);
+		time.sleep(0.5);
+		res=ssh.recv(1024);
+		time.sleep(0.5);
+		#maybe need input password
+		input_pass="%s\n" %password
+		ssh.sendCmd(input_pass);
+		#wait
+		time.sleep(20);
+		ssh.close();'''
+		
+		#get fws by version,send images
+		
