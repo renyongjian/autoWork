@@ -5,9 +5,13 @@ import subprocess
 import paramiko
 import time
 import json
+import select
+import shutil
+
 
 
 from . import UIManager
+from . import mysendmail
 
 class svnClient:
 	def __init__(self):
@@ -79,8 +83,19 @@ class sshClient:
 	def sendCmd(self,cmd):
 		self.channel.sendall(cmd);
 		
-	def recv(self,bytes):
-		return self.channel.recv(bytes);
+	def recv(self,timeout):
+		data=b'';
+		while True:
+			try:
+				readable,w,e= select.select([self.channel],[],[],timeout);
+				if self.channel in readable:
+					data = self.channel.recv(1024);
+					sys.stdout.write(data.decode())
+					sys.stdout.flush()
+				else:
+					return data.decode();
+			except TimeoutError:
+				return data;
 		
 	def close(self):
 		self.channel.close()
@@ -97,7 +112,11 @@ def delete_dire(dire):
 	for bdir in dir_list:
 		os.rmdir(bdir)
 		
-		
+def debug(str_data):
+	data = "%s\n" %str_data;
+	showObj = UIManager.showFrame;
+	showObj.show_str(data);
+	
 def auto_bianyi(product,versions):
 	data="";
 	path="";
@@ -111,15 +130,22 @@ def auto_bianyi(product,versions):
 	#change config file 
 	#get config files 
 	for sw_version in new_versions:
-		print(sw_version);
+		debug("sw version is %s" %sw_version);
+		debug("正在导入配置文件...");
 		with open("F:/doc/bianyi.conf",'r') as byconfig:
 			byconfig_data=byconfig.read();
 		json_data=json.loads(byconfig_data);
+		debug("导入配置文件成功");
+		debug("正在设置svn目录...");
 		path=json_data[product]['svn_dir'];
 		svn_client.set_svn_path(path);
+		debug("正在进入svn目录...");
 		os.chdir(path);
+		debug("正在更新svn目录...");
 		svn_client.svn_update();
-		if(json_data):
+		debug("正在修改配置文件...");
+		#修改配置文件
+		'''if(json_data):
 			for tmp_file in json_data[product]['files']:#找到所有要修改的配置文件。
 				#change config file
 				i=0;
@@ -134,67 +160,89 @@ def auto_bianyi(product,versions):
 								fp_data[i]=line[:-3]+sw_version + '\n';
 							else:
 								fp_data[i]=line[:-3]+sw_version +' ' + '\n';
-							print("line is %s,i=%d" %(fp_data,i));
+							debug("line is %s,i=%d" %(fp_data,i));
 							found =True;
 							break;
 						i+=1;
-					print(found);
+					debug(found);
 					if(found):
 						with open(tmp_file,'w') as fp_write:
 							fp_write.writelines(fp_data);
 		else:
-			break;
-
-		#update
+			break;'''
+		debug("修改配置文件完成");
+		#自动提交到svn
 		svn_client.svn_commit(sw_version,path);
-		#get svn version
+		debug("正在提交到svn...");
+		#获取svn的版本号，下面有用
+		debug("正在更新svn，并且获取最新的版本号...");
 		svn_client.svn_update();
 		svn_version = svn_client.svn_get_version();
-		print(svn_version);
+		debug("svn_version is %s" %svn_version);
 		
-		#clear fw dir 
-		fw_dir=json_data[product]['fw_dir']+sw_version;
-		delete_dire(fw_dir);
-		try:
-			os.makedirs(fw_dir);
-		except:
-			print("目录已经存在");
-		print(fw_dir);
-		
-		
-		#login to sever and bianyi
-		'''with open("F:/doc/ssh_login.conf") as file:
-			data=file.read();
-		json_data=json.loads(data);
-		host=json_data['host'];
-		password=json_data['pass'];
-		user=json_data['user'];
-		port=json_data['port'];
-		cmd1=json_data['cmd1'];
-		cmd2=json_data['cmd2'];
-		
+		debug("正在登陆到服务器...");
+		#登录到服务器，自动执行所有的命令
+		host = json_data['login']['host'];
+		password = json_data['login']['pass'];
+		user = json_data['login']['user'];
+		port = json_data['login']['port'];
+		cmds = json_data[product]['cmds'];
+		flag_dir = json_data[product]['flag_dir'];
 		ssh = sshClient(host=host,port=(int)(port),user=user,password=password);
-		time.sleep(0.5);
-		res = ssh.recv(1024);
-		sys.stdout.write(res.decode())
-		sys.stdout.flush()
-		time.sleep(0.5);
-		ssh.sendCmd(cmd1);
-		time.sleep(0.5);
-		res=ssh.recv(1024);
-		sys.stdout.write(res.decode())
-		sys.stdout.flush()
-		time.sleep(0.5);
-		ssh.sendCmd(cmd2);
-		time.sleep(0.5);
-		res=ssh.recv(1024);
-		time.sleep(0.5);
-		#maybe need input password
-		input_pass="%s\n" %password
-		ssh.sendCmd(input_pass);
-		#wait
-		time.sleep(20);
-		ssh.close();'''
+		for cmd in cmds:
+			recv_data = "";
+			debug("正在执行命令:%s" %cmd);
+			ssh.sendCmd(cmd);
+			recv_data = ssh.recv(10);
+			if "password for" in recv_data:
+				debug("recv data is %s" %(recv_data));
+				input_pass="%s\n" %password
+				debug("input pass word is %s" %input_pass);
+				ssh.sendCmd(input_pass);
+			if "build_fw" in cmd:
+				while True:
+					recv_data = ssh.recv(10);
+					if flag_dir in recv_data:
+						break;
+		#svn_version = "33748";
+		debug("命令执行完毕...");
+		#命令执行完毕，理论上，要的东西已经有了，现在想办法拷贝到希望的地方
+		debug("start to cp images");
+		debug("正在拷贝需要的东西...");
+		image_dir = json_data[product]['image_dir'];
+		linux_tmp_dir=json_data[product]['linux_tmp_dir'];
+		tmp_dir=json_data[product]['tmp_dir'];
+		#进入目标目录，开始拷贝
+		cmd = "cd %s\n" %(image_dir);
+		ssh.sendCmd(cmd);
+		recv_data = ssh.recv(1);
+		cmd = "cp DailyFw_r%s" %(svn_version);
+		ssh.sendCmd(cmd);
+		recv_data = ssh.recv(1);
+		cmd = "\t";
+		ssh.sendCmd(cmd);
+		recv_data = ssh.recv(1);
+		cmd = "\t\t  %s -rf" %(linux_tmp_dir);
+		ssh.sendCmd(cmd);
+		recv_data = ssh.recv(1);
+		cmd = "\n";
+		ssh.sendCmd(cmd);
+		recv_data = ssh.recv(1);
+		ssh.close();
 		
+		debug("正在拷贝需要的东西到指定的windows目录...");
 		#get fws by version,send images
+		fw_dir=json_data[product]['fw_dir']+sw_version;
+		#delete_dire(fw_dir);
+		shutil.rmtree(fw_dir,True);
+		try :
+			debug("tmp_dir is %s"  %tmp_dir)
+			shutil.copytree(tmp_dir,fw_dir);
+			debug("拷贝成功")
+		except:
+			debug("拷贝失败");
+		
+		debug("执行完毕")
+		
+		
 		

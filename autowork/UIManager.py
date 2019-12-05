@@ -56,7 +56,7 @@ class mainFrame(wx.Frame):
 		
 		#bind event
 		self.tc1.Bind(wx.EVT_TEXT_ENTER,self.on_enter_pressed,self.tc1);
-		self.panel.Bind(wx.EVT_ERASE_BACKGROUND,self.on_erase_back);
+		#self.panel.Bind(wx.EVT_ERASE_BACKGROUND,self.on_erase_back);
 		#self.tc1.Bind(wx.EVT_TEXT, self.EvtText);
 		self.Bind(wx.EVT_CLOSE, self.on_close);
 		self.Bind(wx.EVT_SIZE, self.on_size);
