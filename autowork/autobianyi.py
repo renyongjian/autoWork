@@ -145,7 +145,7 @@ def auto_bianyi(product,versions):
 		svn_client.svn_update();
 		debug("正在修改配置文件...");
 		#修改配置文件
-		'''if(json_data):
+		if(json_data):
 			for tmp_file in json_data[product]['files']:#找到所有要修改的配置文件。
 				#change config file
 				i=0;
@@ -158,18 +158,15 @@ def auto_bianyi(product,versions):
 							if(line[-3:] != sw_version):
 								line=line.replace(' ','');
 								fp_data[i]=line[:-3]+sw_version + '\n';
-							else:
-								fp_data[i]=line[:-3]+sw_version +' ' + '\n';
-							debug("line is %s,i=%d" %(fp_data,i));
+							debug("已经找到并且修改了版本号。。");
 							found =True;
 							break;
 						i+=1;
-					debug(found);
 					if(found):
 						with open(tmp_file,'w') as fp_write:
 							fp_write.writelines(fp_data);
 		else:
-			break;'''
+			break;
 		debug("修改配置文件完成");
 		#自动提交到svn
 		svn_client.svn_commit(sw_version,path);
@@ -178,7 +175,7 @@ def auto_bianyi(product,versions):
 		debug("正在更新svn，并且获取最新的版本号...");
 		svn_client.svn_update();
 		svn_version = svn_client.svn_get_version();
-		debug("svn_version is %s" %svn_version);
+		debug("最新的svn_version 是 %s" %svn_version);
 		
 		debug("正在登陆到服务器...");
 		#登录到服务器，自动执行所有的命令
@@ -195,19 +192,17 @@ def auto_bianyi(product,versions):
 			ssh.sendCmd(cmd);
 			recv_data = ssh.recv(10);
 			if "password for" in recv_data:
-				debug("recv data is %s" %(recv_data));
+				debug("需要输入密码...");
 				input_pass="%s\n" %password
-				debug("input pass word is %s" %input_pass);
+				debug("输入的密码是 %s" %input_pass);
 				ssh.sendCmd(input_pass);
 			if "build_fw" in cmd:
 				while True:
 					recv_data = ssh.recv(10);
 					if flag_dir in recv_data:
 						break;
-		#svn_version = "33748";
 		debug("命令执行完毕...");
 		#命令执行完毕，理论上，要的东西已经有了，现在想办法拷贝到希望的地方
-		debug("start to cp images");
 		debug("正在拷贝需要的东西...");
 		image_dir = json_data[product]['image_dir'];
 		linux_tmp_dir=json_data[product]['linux_tmp_dir'];
@@ -236,11 +231,13 @@ def auto_bianyi(product,versions):
 		#delete_dire(fw_dir);
 		shutil.rmtree(fw_dir,True);
 		try :
-			debug("tmp_dir is %s"  %tmp_dir)
+			debug("正在从 %s 拷贝到 %s"  %(tmp_dir,fw_dir))
 			shutil.copytree(tmp_dir,fw_dir);
-			debug("拷贝成功")
+			debug("拷贝成功");
+			mysendmail.send_mail("成功，自动编译 %s %s 完成" %(product,sw_version));
 		except:
 			debug("拷贝失败");
+			mysendmail.send_mail("失败，自动编译 %s %s 结束" %(product,sw_version));
 		
 		debug("执行完毕")
 		

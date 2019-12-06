@@ -18,15 +18,13 @@ json_data = {};
 
 
 
-message = MIMEText('autowork', 'plain', 'utf-8')
-message['From'] = Header("renyongjian", 'utf-8')
-message['To'] =  Header("renyongjian", 'utf-8')
-
-subject = 'auto work'
-message['Subject'] = Header(subject, 'utf-8')
 
 
-def send_mail():
+
+
+
+
+def send_mail(send_data):
 	try:
 		smtpObj = smtplib.SMTP(); 
 		showObj=UIManager.showFrame;
@@ -35,6 +33,10 @@ def send_mail():
 			showObj.show_str("正在导入数据...\n");
 			json_data = json.loads(data);
 			showObj.show_str("导入数据成功...\n");
+		message = MIMEText(send_data, 'plain', 'utf-8')
+		message['From'] = Header("renyongjian", 'utf-8')
+		message['To'] =  Header("renyongjian", 'utf-8')
+		message['Subject'] = Header('auto work', 'utf-8')
 		mail_host=json_data['mail_host'];
 		mail_user=json_data['mail_user'];
 		mail_pass=json_data['mail_pass'];

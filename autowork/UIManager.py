@@ -74,7 +74,7 @@ class mainFrame(wx.Frame):
 		args = arg.split(' ');
 		print(args[0]);
 		if args[0] == "发送邮件":
-			mysendmail.send_mail();
+			mysendmail.send_mail("邮件测试");
 		elif args[0] == "配置":
 			autoconfig.config(args[1],args[2]);
 		elif args[0] == "切换":
