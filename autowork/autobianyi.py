@@ -211,9 +211,9 @@ def auto_bianyi(product,versions):
 		cmd = "cd %s\n" %(image_dir);
 		ssh.sendCmd(cmd);
 		recv_data = ssh.recv(1);
-		cmd = "cp DailyFw_r%s" %(svn_version);
+		cmd = "cp DailyFw_r%s\t\t\t  %s -rf\n" %(svn_version,linux_tmp_dir);
 		ssh.sendCmd(cmd);
-		recv_data = ssh.recv(1);
+		'''srecv_data = ssh.recv(1);
 		cmd = "\t";
 		ssh.sendCmd(cmd);
 		recv_data = ssh.recv(1);
@@ -221,7 +221,7 @@ def auto_bianyi(product,versions):
 		ssh.sendCmd(cmd);
 		recv_data = ssh.recv(1);
 		cmd = "\n";
-		ssh.sendCmd(cmd);
+		ssh.sendCmd(cmd);'''
 		recv_data = ssh.recv(1);
 		ssh.close();
 		
