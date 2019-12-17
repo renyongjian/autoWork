@@ -197,6 +197,11 @@ def auto_bianyi(product,versions):
 				debug("输入的密码是 %s" %input_pass);
 				ssh.sendCmd(input_pass);
 			if "build_fw" in cmd:
+				if "up" in cmd:
+					debug("再次更新svn，并且获取最新的版本号...");
+					svn_client.svn_update();
+					svn_version = svn_client.svn_get_version();
+					debug("最新的svn_version 是 %s" %svn_version);
 				while True:
 					recv_data = ssh.recv(10);
 					if flag_dir in recv_data:
@@ -213,15 +218,6 @@ def auto_bianyi(product,versions):
 		recv_data = ssh.recv(1);
 		cmd = "cp DailyFw_r%s\t\t\t  %s -rf\n" %(svn_version,linux_tmp_dir);
 		ssh.sendCmd(cmd);
-		'''srecv_data = ssh.recv(1);
-		cmd = "\t";
-		ssh.sendCmd(cmd);
-		recv_data = ssh.recv(1);
-		cmd = "\t\t  %s -rf" %(linux_tmp_dir);
-		ssh.sendCmd(cmd);
-		recv_data = ssh.recv(1);
-		cmd = "\n";
-		ssh.sendCmd(cmd);'''
 		recv_data = ssh.recv(1);
 		ssh.close();
 		
@@ -231,7 +227,7 @@ def auto_bianyi(product,versions):
 		#delete_dire(fw_dir);
 		shutil.rmtree(fw_dir,True);
 		try :
-			debug("正在从 %s 拷贝到 %s"  %(tmp_dir,fw_dir))
+			debug("正在从 %s 拷贝到 %s"  %(tmp_dir,fw_dir));
 			shutil.copytree(tmp_dir,fw_dir);
 			debug("拷贝成功");
 			mysendmail.send_mail("成功，自动编译 %s %s 完成" %(product,sw_version));
