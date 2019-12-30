@@ -57,7 +57,7 @@ class svnClient:
 				return False;
 				
 	def svn_commit(self,ver_num,path):
-		commit_line='svn commit -m "修改版本号到%s" %s' %(ver_num,path);
+		commit_line='svn commit -m "自动编译，修改版本号到%s" %s' %(ver_num,path);
 		print(commit_line)
 		args = 'cd /d ' + self.svn_path + ' & ' + commit_line;
 		with subprocess.Popen(args, shell=True, universal_newlines = True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
