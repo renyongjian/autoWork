@@ -123,9 +123,11 @@ def auto_bianyi(product,versions):
 	sw_version_name="sw_version=";
 	new_versions= versions.split(',');
 	
+	
+	debug(new_versions)
+
 	#login to svn .
 	svn_client=svnClient();
-
 	
 	#change config file 
 	#get config files 
@@ -147,6 +149,10 @@ def auto_bianyi(product,versions):
 		#修改配置文件
 		if(json_data):
 			for tmp_file in json_data[product]['files']:#找到所有要修改的配置文件。
+				#如果是same，表示就使用当前的版本号，不设置。
+				if sw_version == "same":
+					debug(sw_version);
+					break;
 				#change config file
 				i=0;
 				found = False;
@@ -155,6 +161,14 @@ def auto_bianyi(product,versions):
 					for line in fp_data:
 						if(sw_version_name in line):
 							line=line.replace('\n','');
+							#如果是+num，表示加几个值的意思，一般是+1
+							if "+" in sw_version:
+								add_num=int(sw_version[-1:]);
+								cur_version = line[-3:];
+								cur_version_num = int(cur_version[-1:])+int(cur_version[-3:-2])*10;
+								cur_version_num += add_num;
+								sw_version = str(int(cur_version_num/10))+"."+ str(cur_version_num%10);
+								debug("new version is after add is %s" %sw_version);
 							if(line[-3:] != sw_version):
 								line=line.replace(' ','');
 								fp_data[i]=line[:-3]+sw_version + '\n';

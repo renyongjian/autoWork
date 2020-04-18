@@ -80,7 +80,10 @@ class mainFrame(wx.Frame):
 		elif args[0] == "切换":
 			autotelnet.auto_telnet_change_ip();
 		elif args[0] == "编译":
-			autobianyi.auto_bianyi(args[1],args[2]);
+			if len(args) == 3:
+				autobianyi.auto_bianyi(args[1],args[2]);
+			else :
+				autobianyi.auto_bianyi(args[1],"same")
 		
 	
 	def on_size(self, evt):
