@@ -150,8 +150,8 @@ def auto_bianyi(product,versions):
 		if(json_data):
 			for tmp_file in json_data[product]['files']:#找到所有要修改的配置文件。
 				#如果是same，表示就使用当前的版本号，不设置。
-				if sw_version == "same":
-					debug(sw_version);
+				if sw_version == "same" or sw_version == "" or sw_version == " ":
+					debug("不需要修改配置文件");
 					break;
 				#change config file
 				i=0;
