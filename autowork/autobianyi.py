@@ -149,10 +149,6 @@ def auto_bianyi(product,versions):
 		#修改配置文件
 		if(json_data):
 			for tmp_file in json_data[product]['files']:#找到所有要修改的配置文件。
-				#如果是same，表示就使用当前的版本号，不设置。
-				if sw_version == "same" or sw_version == "" or sw_version == " ":
-					debug("不需要修改配置文件");
-					break;
 				#change config file
 				i=0;
 				found = False;
@@ -169,10 +165,14 @@ def auto_bianyi(product,versions):
 								cur_version_num += add_num;
 								sw_version = str(int(cur_version_num/10))+"."+ str(cur_version_num%10);
 								debug("new version is after add is %s" %sw_version);
+							#如果是same，表示就使用当前的版本号，不设置。
+							if sw_version == "same" or sw_version == "" or sw_version == " ":
+								debug("不需要修改配置文件");
+								sw_version=line[-3:];
 							if(line[-3:] != sw_version):
 								line=line.replace(' ','');
 								fp_data[i]=line[:-3]+sw_version + '\n';
-							debug("已经找到并且修改了版本号。。");
+								debug("已经找到并且修改了版本号。。");
 							found =True;
 							break;
 						i+=1;
