@@ -211,7 +211,7 @@ def auto_bianyi(product,versions):
 				debug("输入的密码是 %s" %input_pass);
 				ssh.sendCmd(input_pass);
 			if "build_fw" in cmd:
-				if "up" in cmd:
+				if " fw" in cmd:
 					debug("再次更新svn，并且获取最新的版本号...");
 					svn_client.svn_update();
 					svn_version = svn_client.svn_get_version();
