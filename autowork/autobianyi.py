@@ -232,7 +232,8 @@ def auto_bianyi(product,versions):
 		recv_data = ssh.recv(1);
 		cmd = "cp DailyFw_r%s\t\t\t  %s -rf\n" %(svn_version,linux_tmp_dir);
 		ssh.sendCmd(cmd);
-		recv_data = ssh.recv(1);
+		#东西多的时候确保能拷贝过来。
+		recv_data = ssh.recv(5);
 		ssh.close();
 		
 		debug("正在拷贝需要的东西到指定的windows目录...");
